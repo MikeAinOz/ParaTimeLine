@@ -1,0 +1,163 @@
+/*
+ *  Power BI Visualizations
+ *
+ *  Copyright (c) Microsoft Corporation
+ *  All rights reserved.
+ *  MIT License
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the ""Software""), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+
+ /**
+ * Imports external styles.
+ * We compile it as a less file in order to wrap the external CSS rules.
+ */
+@import (less) "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.css";
+@import (less) "node_modules/powerbi-visuals-utils-formattingutils/lib/index.css";
+@import (less) "node_modules/powerbi-visuals-utils-chartutils/lib/index.css";
+
+input[type="date"]::-webkit-clear-button {
+    display: none;
+}
+
+input[type="date"]::-webkit-inner-spin-button, 
+input[type="date"]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+.timeline-component {
+    cursor: default;
+
+    .timeline {
+        font-family: helvetica, arial, sans-serif;
+
+        -webkit-tap-highlight-color: transparent;
+
+        cursor: default;
+
+        overflow-y: hidden;
+
+        .label,
+        .mainArea .label,
+        .upperTextCell,
+        .lowerTextCell {
+            text-anchor: middle;
+        }
+
+        .cellRect {
+            stroke: #333444;
+        }
+
+        .selection {
+            &Cursor {
+                fill: gray;
+            }
+
+            &RangeContainer {
+                text-anchor: start;
+            }
+        }
+
+        .periodSlicerSelectionRect,
+        .timelineVertLine,
+        .cellRect {
+            cursor: pointer;
+        }
+
+        .selectionCursor {
+            cursor: ew-resize;
+        }
+    }
+
+    .timelineSlicer {
+        fill: #000000;
+
+        cursor: pointer;
+
+        .periodSlicer {
+            &Rect {
+                stroke: #aaa;
+                stroke-width: 2px;
+                fill: transparent;
+            }
+
+            &Granularities,
+            &Selection {
+                font-size: 10px;
+                text-anchor: middle;
+            }
+
+            &SelectionRect {
+                fill: transparent;
+            }
+        }
+
+        .periodSlicerRect {
+            pointer-events: none;
+        }
+    }
+
+    .timelineWrapper {
+        width: 50%;
+        display: inline-block;
+        vertical-align: top;
+        overflow-y: hidden;
+        height: auto;
+    }
+
+    .dateRange {
+        display: block;
+        border: none;
+        margin: 0;
+    }
+
+    .datePickerDiv {
+        display: inline-block;
+        margin-left: 1%;
+    }
+
+    .containerG {
+        width: 50%;
+        margin-top: 10px;
+        height: auto;
+        display: inline-block;
+    }
+
+    .split {
+        width: 150px;
+        display: inline-block;
+    }
+
+    .fbt {
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .btDiv {
+        display: inline-block;
+    }
+
+    .btDiv,
+    .btDiv2 {
+        margin-top: 5px;
+    }
+
+    overflow: auto;
+}
