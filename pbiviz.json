@@ -1,11 +1,11 @@
 {
   "visual": {
-    "name": "paraTimeline",
-    "displayName": "paraTimeline 1.1.0",
-    "guid": "paraTimelineD2912F7F585940B2890DA6F2C46783B3",
+    "name": "paraTimeline2.0.0",
+    "displayName": "paraTimeline 2.0.0",
+    "guid": "paraDateline9C512AAFFAD845FD99CC8BFC8EFF3952",
     "visualClassName": "paraTimeline",
-    "version": "1.1.0",
-    "description": "Timeline slicer is a graphical date range selector used as a filtering component in the report canvas",
+    "version": "2.0.0",
+    "description": "paraTimeline",
     "supportUrl": "smith11041104@gmail.com",
     "gitHubUrl": ""
   },

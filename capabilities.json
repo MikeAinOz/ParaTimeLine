@@ -1,20 +1,20 @@
 {
     "dataRoles": [{
-        "name": "Time",
+        "name": "Date",
         "kind": "Grouping",
         "displayName": "Date",
-        "displayNameKey": "Role_Time"
+        "displayNameKey": "Role_Date"
     }],
     "dataViewMappings": [{
         "conditions": [{
-            "Time": {
+            "Date": {
                 "max": 1
             }
         }],
         "categorical": {
             "categories": {
                 "for": {
-                    "in": "Time"
+                    "in": "Date"
                 },
                 "dataReductionAlgorithm": {
                     "sample": {}
