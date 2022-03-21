@@ -24,8 +24,8 @@
  *  THE SOFTWARE.
  */
 
-import { TimelineDatePeriodBase } from "../datePeriod/datePeriodBase";
+import { TimelineDatePeriodBase } from "../datePeriod/TimelineDatePeriodBase";
 
 export class GeneralSettings {
-    public datePeriod: TimelineDatePeriodBase | string = TimelineDatePeriodBase.createEmpty();
+    public datePeriod: TimelineDatePeriodBase | string = TimelineDatePeriodBase.CREATEEMPTY();
 }

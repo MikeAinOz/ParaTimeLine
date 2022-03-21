@@ -30,13 +30,13 @@ import { Calendar } from "../calendar";
 import { ITimelineLabel } from "../dataInterfaces";
 import { ITimelineDatePeriod } from "../datePeriod/datePeriod";
 import { Utils } from "../utils";
-import { TimelineGranularityBase } from "./granularityBase";
+import { TimelineGranularityBase } from "./TimelineGranularityBase";
 import { IGranularityRenderProps } from "./granularityRenderProps";
 import { GranularityType } from "./granularityType";
 
 export class DayGranularity extends TimelineGranularityBase {
     constructor(calendar: Calendar, locale: string) {
-        super(calendar, locale, Utils.getGranularityPropsByMarker("D"));
+        super(calendar, locale, Utils.GETGRANULARITYPROPSBYMARKER("D"));
     }
 
     public render(props: IGranularityRenderProps, isFirst: boolean): Selection<any, any, any, any> {
@@ -51,7 +51,7 @@ export class DayGranularity extends TimelineGranularityBase {
         return GranularityType.day;
     }
 
-    public splitDate(date: Date): Array<string | number> {
+    public splitDate(date: Date) {
         return [
             this.shortMonthName(date),
             date.getDate(),

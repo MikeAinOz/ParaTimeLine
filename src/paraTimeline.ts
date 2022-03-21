@@ -28,11 +28,17 @@ import "../style/visual.less";
 // import "core-js/stable";
 // import "@babel/polyfill";
 
+
+import powerbi from "powerbi-visuals-api";
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
+
 import {
     select as d3Select,
     selectAll as d3SelectAll,
     Selection as D3Selection,
 } from "d3-selection";
+import * as d3 from "d3";
+import * as $ from "jquery";
 
 import {
     drag as d3Drag,
@@ -42,7 +48,7 @@ import {
     arc as d3Arc,
 } from "d3-shape";
 
-import powerbi from "powerbi-visuals-api";
+import powerbiVisualsApi from "powerbi-visuals-api";
 
 import {
     AdvancedFilter,
@@ -80,9 +86,9 @@ import {
 import { CalendarSettings } from "./settings/calendarSettings";
 import { CellsSettings } from "./settings/cellsSettings";
 import { LabelsSettings } from "./settings/labelsSettings";
-import { VisualSettings } from "./settings/settings";
+import { VisualSettings } from "./settings/VisualSettings";
 
-import { TimelineGranularityData } from "./granularity/granularityData";
+import { TimelineGranularityData } from "./granularity/TimelineGranularityData";
 import { GranularityNames } from "./granularity/granularityNames";
 import { GranularityType } from "./granularity/granularityType";
 
@@ -91,47 +97,44 @@ import {
     ITimelineDatePeriodBase,
 } from "./datePeriod/datePeriod";
 
-import { TimelineDatePeriodBase } from "./datePeriod/datePeriodBase";
+import { TimelineDatePeriodBase } from "./datePeriod/TimelineDatePeriodBase";
 
 import { Calendar } from "./calendar";
 import { Utils } from "./utils";
 // import { Console } from "console";
 
-export class paraTimeline implements powerbi.extensibility.visual.IVisual {
-    public static setValidCalendarSettings(calendarSettings: CalendarSettings): void {
-        const defaultSettings: VisualSettings = VisualSettings.getDefault() as VisualSettings;
-        const theLatestDayOfMonth: number = Utils.getTheLatestDayOfMonth(calendarSettings.month);
+export class paraTimeline implements powerbiVisualsApi.extensibility.visual.IVisual {
+    public static SETVALIDCALENDARSETTINGS(calendarSettings: CalendarSettings): void {
+        const defaultSettings = VisualSettings.getDefault();
+        const theLatestDayOfMonth: number = Utils.GETTHELATESTDAYOFMONTH(calendarSettings.month);
 
         calendarSettings.day = Math.max(
-            defaultSettings.calendar.day,
+            defaultSettings["calendar"].day,
             Math.min(theLatestDayOfMonth, calendarSettings.day),
         );
     }
 
-    public static selectCurrentPeriod(
+    public static SELECTCURRENTPERIOD(
         datePeriod: ITimelineDatePeriodBase,
         granularity: GranularityType,
         calendar,
     ) {
-        return this.selectPeriod(datePeriod, granularity, calendar, Utils.resetTime(new Date()));
+        return this.SELECTPRIOD1(datePeriod, granularity, calendar, Utils.RESETTIME(new Date()));
     }
 
-    /**
-     * TODO: We need to simplify this method.
-     */
-    public static converter(
+    public static CONVERTER(
         timelineData: ITimelineData,
         timelineProperties: ITimelineProperties,
         timelineGranularityData: TimelineGranularityData,
-        dataView: powerbi.DataView,
+        dataView: powerbiVisualsApi.DataView,
         initialized: boolean,
         timelineSettings: VisualSettings,
-        viewport: powerbi.IViewport,
+        viewport: powerbiVisualsApi.IViewport,
         previousCalendar: Calendar,
         setting: VisualSettings,
         timelineSize: number
     ): Calendar {
-        if (this.isDataViewValid(dataView)) {
+        if (this.isdataviewvalid(dataView)) {
             return null;
         }
 
@@ -161,8 +164,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             && previousCalendar.isChanged(timelineSettings.calendar, timelineSettings.weekDay);
 
         if (timelineData && timelineData.currentGranularity) {
-            startDate = Utils.getStartSelectionDate(timelineData);
-            endDate = Utils.getEndSelectionDate(timelineData);
+            startDate = Utils.GETSTARTSELECTIONDATE(timelineData);
+            endDate = Utils.GETENDSELECTIONDATE(timelineData);
         }
 
         if (!initialized || isCalendarChanged) {
@@ -178,16 +181,16 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             timelineData.selectionEndIndex = timelineData.currentGranularity.getDatePeriods().length - 1;
         }
 
-        const category: powerbi.DataViewCategoryColumn = dataView.categorical.categories[0];
+        const category: powerbiVisualsApi.DataViewCategoryColumn = dataView.categorical.categories[0];
         timelineData.filterColumnTarget = extractFilterColumnTarget(category);
 
         if (category.source.type.numeric) {
-            (timelineData.filterColumnTarget as any).ref = "Date";
+            timelineData.filterColumnTarget["ref"] = "Date";
         }
 
         if (isCalendarChanged && startDate && endDate) {
-            Utils.unseparateSelection(timelineData.currentGranularity.getDatePeriods());
-            Utils.separateSelection(timelineData, startDate, endDate);
+            Utils.UNSEPARATESELECTION(timelineData.currentGranularity.getDatePeriods());
+            Utils.SEPARATESELECTION(timelineData, startDate, endDate);
         }
 
         timelineElements = timelineData.currentGranularity.getDatePeriods();
@@ -210,7 +213,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             })
             .length;
 
-        paraTimeline.setMeasures(
+        paraTimeline.setmeasures(
             timelineSettings.labels,
             timelineData.currentGranularity.getType(),
             countFullCells,
@@ -220,12 +223,12 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             timelineSize
         );
 
-        paraTimeline.updateCursors(timelineData);
+        paraTimeline.updatecursors(timelineData);
 
         return calendar;
     }
 
-    public static selectPeriod(
+    public static SELECTPRIOD1(
         datePeriod: ITimelineDatePeriodBase,
         granularity: GranularityType,
         calendar,
@@ -274,17 +277,17 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         return { startDate, endDate };
     }
 
-    public static areVisualUpdateOptionsValid(options: powerbi.extensibility.visual.VisualUpdateOptions): boolean {
+    public static AREVISUALUPDATEOPTIONSVALID(options: powerbiVisualsApi.extensibility.visual.VisualUpdateOptions): boolean {
         if (!options
             || !options.dataViews
             || !options.dataViews[0]
             || !options.dataViews[0].metadata
-            || !paraTimeline.isDataViewCategoricalValid(options.dataViews[0].categorical)) {
+            || !paraTimeline.ISDATAVIEWCATEGORICALVALID(options.dataViews[0].categorical)) {
 
             return false;
         }
 
-        const dataView: powerbi.DataView = options.dataViews[0];
+        const dataView: powerbiVisualsApi.DataView = options.dataViews[0];
         const columnExp: any = dataView.categorical.categories[0].source.expr;
         let valueType: string;
 
@@ -301,7 +304,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         return true;
     }
 
-    public static isDataViewCategoricalValid(dataViewCategorical: powerbi.DataViewCategorical): boolean {
+    public static ISDATAVIEWCATEGORICALVALID(dataViewCategorical: powerbiVisualsApi.DataViewCategorical): boolean {
         return !(!dataViewCategorical
             || !dataViewCategorical.categories
             || dataViewCategorical.categories.length !== 1
@@ -371,6 +374,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     private static DefaultRangeTextSelectionY: number = 40;
 
     private static ViewportWidthAdjustment: number = 2;
+    public static timeZone = "America/New_York";
 
     private static filterObjectProperty: { objectName: string, propertyName: string } = {
         objectName: "general",
@@ -400,7 +404,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         UpperTextCell: CssConstants.createClassAndSelector("upperTextCell"),
     };
 
-    private static updateCursors(timelineData: ITimelineData): void {
+    private static updatecursors(timelineData: ITimelineData): void {
         const startDate: ITimelineDatePeriod = timelineData.timelineDataPoints[timelineData.selectionStartIndex].datePeriod;
         const endDate: ITimelineDatePeriod = timelineData.timelineDataPoints[timelineData.selectionEndIndex].datePeriod;
 
@@ -408,7 +412,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         timelineData.cursorDataPoints[1].selectionIndex = endDate.index + endDate.fraction;
     }
 
-    private static isDataViewValid(dataView): boolean {
+    private static isdataviewvalid(dataView): boolean {
         if (!dataView
             || !dataView.categorical
             || !dataView.metadata
@@ -423,11 +427,11 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         return false;
     }
 
-    private static setMeasures(
+    private static setmeasures(
         labelsSettings: LabelsSettings,
         granularityType: GranularityType,
         datePeriodsCount: number,
-        viewport: powerbi.IViewport,
+        viewport: powerbiVisualsApi.IViewport,
         timelineProperties: ITimelineProperties,
         timelineMargins: ITimelineMargins,
         timelineSize: number
@@ -469,14 +473,14 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         timelineProperties.cellWidth = width;
     }
 
-    private static parseSettings(
-        dataView: powerbi.DataView,
-        jsonFilters: AdvancedFilter[],
-        colorPalette: powerbi.extensibility.ISandboxExtendedColorPalette,
+    private static parsesettings(
+        dataView: powerbiVisualsApi.DataView,
+        jsonFilters,
+        colorPalette: powerbiVisualsApi.extensibility.ISandboxExtendedColorPalette,
     ): VisualSettings {
         const settings: VisualSettings = VisualSettings.parse<VisualSettings>(dataView);
 
-        paraTimeline.setValidCalendarSettings(settings.calendar);
+        paraTimeline.SETVALIDCALENDARSETTINGS(settings.calendar);
 
         if (jsonFilters
             && jsonFilters[0]
@@ -488,12 +492,12 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             const endDate: Date = new Date(`${jsonFilters[0].conditions[1].value}`);
 
             if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                settings.general.datePeriod = TimelineDatePeriodBase.create(startDate, endDate);
+                settings.general.datePeriod = TimelineDatePeriodBase.CREATE(startDate, endDate);
             } else {
-                settings.general.datePeriod = TimelineDatePeriodBase.createEmpty();
+                settings.general.datePeriod = TimelineDatePeriodBase.CREATEEMPTY();
             }
         } else {
-            settings.general.datePeriod = TimelineDatePeriodBase.createEmpty();
+            settings.general.datePeriod = TimelineDatePeriodBase.CREATEEMPTY();
         }
 
         if (colorPalette.isHighContrast) {
@@ -547,9 +551,10 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     private cellsSelection: D3Selection<any, any, any, any>;
     private cursorGroupSelection: D3Selection<any, any, any, any>;
     private selectorSelection: D3Selection<any, any, any, any>;
+    private containerG: D3Selection<any, any, any, any>;
 
-    private options: powerbi.extensibility.visual.VisualUpdateOptions;
-    private dataView: powerbi.DataView;
+    private options: powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
+    private dataView: powerbiVisualsApi.DataView;
 
     private svgWidth: number;
 
@@ -559,10 +564,10 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     private initialized: boolean;
 
-    private host: powerbi.extensibility.visual.IVisualHost;
+    private host: powerbiVisualsApi.extensibility.visual.IVisualHost;
 
     private locale: string;
-    private localizationManager: powerbi.extensibility.ILocalizationManager;
+    private localizationManager: powerbiVisualsApi.extensibility.ILocalizationManager;
     private horizontalAutoScrollingPositionOffset: number = 200;
 
     private selectedGranulaPos: number = null;
@@ -571,6 +576,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     private containerGranularityAndDatePickers;
     private datePickers;
     private timelineSize = 0;
+
+    private selectionManager: ISelectionManager;
 
     //Datepickers declaration
     private startDatePicker;
@@ -585,9 +592,10 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         .on("drag", this.onCursorDrag.bind(this))
         .on("end", this.onCursorDragEnd.bind(this));
 
-    constructor(options: powerbi.extensibility.visual.VisualConstructorOptions) {
+    constructor(options: powerbiVisualsApi.extensibility.visual.VisualConstructorOptions) {
         const element: HTMLElement = options.element;
 
+        this.selectionManager = options.host.createSelectionManager();
         this.host = options.host;
 
         this.initialized = false;
@@ -619,8 +627,10 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             .append("g")
             .attr("float", "left")
             .classed("containerG", true);
+        this.containerG = container;
+        let firstDiv = container.append("div").classed("firstDiv", true);
 
-        this.headerSelection = container
+        this.headerSelection = firstDiv
             .append("svg")
             .classed("split", true);
 
@@ -632,12 +642,12 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             .append("div")
             .classed(paraTimeline.TimelineSelectors.TimelineWrapper.className, true);
 
-        this.datePickers = container
+        this.datePickers = firstDiv
             .append("div")
             .classed("datePickerDiv", true);
 
-        this.datePickers.on("click", function() {
-            const event: MouseEvent = require("d3").event as MouseEvent;
+        this.datePickers.on("click", () => {
+            const event: MouseEvent = (<MouseEvent>require("d3").event);
             event.stopPropagation();
         });
 
@@ -663,11 +673,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         let tMonth = btDiv1.append("div").classed("fbt", true).append("button").text("This Month").on("click", () => this.setThisMonth(this.startDatePicker, this.endDatePicker));
         let lYear = btDiv2.append("div").classed("fbt", true).append("button").text("Last Year").on("click", () => this.setLastYear(this.startDatePicker, this.endDatePicker));
         let lMonth = btDiv2.append("div").classed("fbt", true).append("button").text("Last Month").on("click", () => this.setLastMonth(this.startDatePicker, this.endDatePicker));
-        // let ytd = btDiv2.append("div").classed("fbt", true).append("button").text("YTD").on("click", () => this.setYTD(this.startDatePicker, this.endDatePicker));
-        // let mtd = btDiv2.append("div").classed("fbt", true).append("button").text("MTD").on("click", () => this.setMTD(this.startDatePicker, this.endDatePicker));
-        // let wtd = btDiv2.append("div").classed("fbt", true).append("button").text("WTD").on("click", () => this.setWTD(this.startDatePicker, this.endDatePicker));
         let reset = btDiv3.append("div").classed("fbt", true).append("button").text("Reset").on("click", () => this.clearUserSelection());
-        // let apply = btDiv3.append("div").classed("fbt", true).append("button").text("Apply").on("click", () => this.updateDate(this.startDatePicker, this.endDatePicker));
 
         this.containerGranularityAndDatePickers = container;
 
@@ -677,14 +683,13 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     public dateToString(now) {
         var day = ("0" + now.getDate()).slice(-2);
         var month = ("0" + (now.getMonth() + 1)).slice(-2);
-        var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
-        return today;
+        return now.getFullYear() + "-" + (month) + "-" + (day);
     }
 
     public setThisMonth(startDatePicker, endDatePicker) {
         let today = new Date(), year = today.getFullYear(), month = today.getMonth();
-        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
-        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
+        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
+        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
         let firstDay = new Date(Math.max(new Date(year, month, 1).getTime(), this.datePeriod.startDate.getTime()));
         let lastDay = new Date(Math.min(new Date(year, month + 1, 0).getTime(), this.datePeriod.endDate.getTime()));
         startDatePicker.property("value", this.dateToString(firstDay));
@@ -694,8 +699,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     public setThisYear(startDatePicker, endDatePicker) {
         let today = new Date(), year = today.getFullYear(), month = today.getMonth();
-        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
-        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
+        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
+        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
         let firstDay = new Date(Math.max(new Date(year, 0, 1).getTime(), this.datePeriod.startDate.getTime()));
         let lastDay = new Date(Math.min(new Date(year, 11, 31).getTime(), this.datePeriod.endDate.getTime()));
         startDatePicker.property("value", this.dateToString(firstDay));
@@ -705,8 +710,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     public setLastMonth(startDatePicker, endDatePicker) {
         let today = new Date(), year = today.getFullYear(), month = today.getMonth() - 1;
-        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
-        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
+        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
+        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
         let firstDay = new Date(Math.max(new Date(year, month, 1).getTime(), this.datePeriod.startDate.getTime()));
         let lastDay = new Date(Math.min(new Date(year, month + 1, 0).getTime(), this.datePeriod.endDate.getTime()));
         startDatePicker.property("value", this.dateToString(firstDay));
@@ -716,8 +721,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     public setLastYear(startDatePicker, endDatePicker) {
         let today = new Date(), year = today.getFullYear() - 1, month = today.getMonth();
-        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
-        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
+        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
+        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
         let firstDay = new Date(Math.max(new Date(year, 0, 1).getTime(), this.datePeriod.startDate.getTime()));
         let lastDay = new Date(Math.min(new Date(year, 11, 31).getTime(), this.datePeriod.endDate.getTime()));
         startDatePicker.property("value", this.dateToString(firstDay));
@@ -727,8 +732,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     public setMTD(startDatePicker, endDatePicker) {
         let today = new Date(), year = today.getFullYear(), month = today.getMonth();
-        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
-        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
+        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
+        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
         let firstDay = new Date(Math.max(new Date(year, month, 1).getTime(), this.datePeriod.startDate.getTime()));
         let lastDay = new Date(Math.min(today.getTime(), this.datePeriod.endDate.getTime()));
         startDatePicker.property("value", this.dateToString(firstDay));
@@ -737,8 +742,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     public setYTD(startDatePicker, endDatePicker) {
         let today = new Date(), year = today.getFullYear(), month = today.getMonth();
-        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
-        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"}));
+        let startDate = new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
+        let endDate = new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone}));
         let firstDay = new Date(Math.max(new Date(year, 0, 1).getTime(), this.datePeriod.startDate.getTime()));
         let lastDay = new Date(Math.min(today.getTime(), this.datePeriod.endDate.getTime()));
         startDatePicker.property("value", this.dateToString(firstDay));
@@ -749,8 +754,6 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         if (!this.initialized || !this.timelineData) {
             return;
         }
-
-        //TODO if (this.dataLimited === true)
 
         this.clearSelection(this.timelineData.filterColumnTarget);
         this.toggleForceSelectionOptions();
@@ -769,8 +772,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     public redrawPeriod(granularity: GranularityType): void {
         if (this.doesPeriodSlicerRectPositionNeedToUpdate(granularity)) {
-            const startDate: Date = Utils.getStartSelectionDate(this.timelineData);
-            const endDate: Date = Utils.getEndSelectionDate(this.timelineData);
+            const startDate: Date = Utils.GETSTARTSELECTIONDATE(this.timelineData);
+            const endDate: Date = Utils.GETENDSELECTIONDATE(this.timelineData);
 
             this.changeGranularity(granularity, startDate, endDate);
         }
@@ -779,28 +782,13 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
     private updateDate(startDatePicker, endDatePicker) {
         this.applyDatePeriod(
-            new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"})),
-            new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: "Australia/Brisbane"})),
+            new Date(new Date(startDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone})),
+            new Date(new Date(endDatePicker.node().value).toLocaleString("en-US", {timeZone: paraTimeline.timeZone})),
             this.timelineData.filterColumnTarget,
         );
     }
 
-    public update(options: powerbi.extensibility.visual.VisualUpdateOptions): void {
-        if (!paraTimeline.areVisualUpdateOptionsValid(options)) {
-            this.clearData();
-            return;
-        }
-
-        this.options = options;
-        this.dataView = options.dataViews[0];
-
-        // Setting parsing was moved here from createTimelineData because settings values may be modified before the function is called.
-        this.settings = paraTimeline.parseSettings(
-            this.dataView,
-            this.options.jsonFilters as AdvancedFilter[],
-            this.host.colorPalette,
-        );
-
+    public update1() {
         // it contains dates from data view.
         this.datePeriod = this.createDatePeriod(this.dataView);
 
@@ -871,97 +859,70 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         );
 
         this.updateCalendar(this.settings);
+    }
 
-        // It contains date boundaties that was taken from current slicer filter (filter range).
+    public update2() {
+            // It contains date boundaties that was taken from current slicer filter (filter range).
         // If nothing is selected in slicer the boundaries will be null.
-        const filterDatePeriod: TimelineDatePeriodBase = this.settings.general.datePeriod as TimelineDatePeriodBase;
+        const filterDatePeriod = this.settings.general.datePeriod;
 
         // There may be the case when date boundaries that taken from data view are less than slicer filter dates.
         // The case may happen if there is another timeline slicer that works with the same data and already applied a filter.
         // In that case we need to correct slice filter dates.
-        if (filterDatePeriod.startDate
+        if (filterDatePeriod["startDate"]
             && this.datePeriod.startDate
-            && filterDatePeriod.startDate.getTime() < this.datePeriod.startDate.getTime()
+            && filterDatePeriod["startDate"].getTime() < this.datePeriod.startDate.getTime()
         ) {
-            filterDatePeriod.startDate = null;
+            filterDatePeriod["startDate"] = null;
         }
         // End date from data is always less than date from slicer filter.
         // This means that we need to correct it before check.
         let adaptedDataEndDate: Date = null;
-        if (this.datePeriod.endDate) {
-            adaptedDataEndDate = new Date(this.datePeriod.endDate as any);
-            adaptedDataEndDate.setDate(adaptedDataEndDate.getDate() + 1);
-        }
+        if (this.datePeriod.endDate) adaptedDataEndDate = new Date(this.datePeriod.endDate), adaptedDataEndDate.setDate(adaptedDataEndDate.getDate() + 1);
 
-        if (filterDatePeriod.endDate && adaptedDataEndDate && filterDatePeriod.endDate.getTime() > adaptedDataEndDate.getTime()) {
-            filterDatePeriod.endDate = null;
-        }
+        if (filterDatePeriod["endDate"] && adaptedDataEndDate && filterDatePeriod["endDate"].getTime() > adaptedDataEndDate.getTime()) filterDatePeriod["endDate"] = null;
 
         const datePeriod: ITimelineDatePeriodBase = this.datePeriod;
-
         const granularity = this.settings.granularity.granularity;
-
         const isCurrentPeriodSelected: boolean = !this.isForceSelectionReset && this.settings.forceSelection.currentPeriod;
         const isLatestAvailableDateSelected: boolean = !this.isForceSelectionReset && this.settings.forceSelection.latestAvailableDate;
         const isForceSelected: boolean = !this.isForceSelectionReset && (isCurrentPeriodSelected || isLatestAvailableDateSelected);
-
         this.isForceSelectionReset = false; // Reset it to default state to allow re-enabling Force Selection
-
         const target: IFilterColumnTarget = this.timelineData.filterColumnTarget;
-
         let currentForceSelectionResult = { startDate: null, endDate: null };
 
-        if (isCurrentPeriodSelected) {
-            currentForceSelectionResult = ({
-                endDate: filterDatePeriod.endDate,
-                startDate: filterDatePeriod.startDate,
-            } = paraTimeline.selectCurrentPeriod(datePeriod, granularity, this.calendar));
-        }
-        if (isLatestAvailableDateSelected
-            && (
-                !isCurrentPeriodSelected
-                || (isCurrentPeriodSelected
-                    && !currentForceSelectionResult.startDate
-                    && !currentForceSelectionResult.endDate
-                )
-            )
-        ) {
-            filterDatePeriod.endDate = adaptedDataEndDate;
-            ({
-                endDate: filterDatePeriod.endDate,
-                startDate: filterDatePeriod.startDate,
-            } = paraTimeline.selectPeriod(datePeriod, granularity, this.calendar, this.datePeriod.endDate));
+        if (isCurrentPeriodSelected) currentForceSelectionResult = ({endDate: filterDatePeriod["endDate"], startDate: filterDatePeriod["startDate"],} = paraTimeline.SELECTCURRENTPERIOD(datePeriod, granularity, this.calendar));
+        if (isLatestAvailableDateSelected && (!isCurrentPeriodSelected || (isCurrentPeriodSelected && !currentForceSelectionResult.startDate && !currentForceSelectionResult.endDate))) {
+            filterDatePeriod["endDate"] = adaptedDataEndDate;
+            ({endDate: filterDatePeriod["endDate"], startDate: filterDatePeriod["startDate"], } = paraTimeline.SELECTPRIOD1(datePeriod, granularity, this.calendar, this.datePeriod.endDate));
         }
 
         const wasFilterChanged: boolean =
-            String(this.prevFilteredStartDate) !== String(filterDatePeriod.startDate) ||
-            String(this.prevFilteredEndDate) !== String(filterDatePeriod.endDate);
+            String(this.prevFilteredStartDate) !== String(filterDatePeriod["startDate"]) ||
+            String(this.prevFilteredEndDate) !== String(filterDatePeriod["endDate"]);
 
         if (isForceSelected && wasFilterChanged) {
-            this.applyDatePeriod(filterDatePeriod.startDate, filterDatePeriod.endDate, target);
+            this.applyDatePeriod(filterDatePeriod["startDate"], filterDatePeriod["endDate"], target);
         }
 
         //Set the value of the date pickers to be that closest and further date available
-        if (filterDatePeriod && filterDatePeriod.startDate && filterDatePeriod.endDate) {
-            this.endDatePicker.node().value = this.getDateInDefaultFormat(filterDatePeriod.endDate);
-            this.startDatePicker.node().value = this.getDateInDefaultFormat(filterDatePeriod.startDate);
+        if (filterDatePeriod && filterDatePeriod["startDate"] && filterDatePeriod["endDate"]) {
+            this.endDatePicker.node().value = this.getDateInDefaultFormat(filterDatePeriod["endDate"]);
+            this.startDatePicker.node().value = this.getDateInDefaultFormat(filterDatePeriod["startDate"]);
         } else {
             this.startDatePicker.node().value = this.startDatePicker.node().defaultValue;
             this.endDatePicker.node().value = this.endDatePicker.node().defaultValue;
         }
 
-        this.prevFilteredStartDate = filterDatePeriod.startDate;
-        this.prevFilteredEndDate = filterDatePeriod.endDate;
+        this.prevFilteredStartDate = filterDatePeriod["startDate"], this.prevFilteredEndDate = filterDatePeriod["endDate"];
 
-        if (!this.initialized) {
-            this.initialized = true;
-        }
+        if (!this.initialized) this.initialized = true;
 
-        if (filterDatePeriod.startDate && filterDatePeriod.endDate) {
+        if (filterDatePeriod["startDate"] && filterDatePeriod["endDate"]) {
             this.changeGranularity(
                 this.settings.granularity.granularity,
-                filterDatePeriod.startDate,
-                filterDatePeriod.endDate);
+                filterDatePeriod["startDate"],
+                filterDatePeriod["endDate"]);
             this.updateCalendar(this.settings);
         }
 
@@ -977,7 +938,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
             this.timelineGranularityData.renderGranularities({
                 granularSettings: this.settings.granularity,
-                selectPeriodCallback: (granularityType: GranularityType) => { this.selectPeriod(granularityType); },
+                selectPeriodCallback: (granularityType: GranularityType) => { this.selectPeroid(granularityType); },
                 selection: this.selectorSelection,
             });
 
@@ -987,11 +948,31 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                     .append("text")
                     .attr("fill", this.settings.granularity.scaleColor)
                     .classed(paraTimeline.TimelineSelectors.PeriodSlicerSelection.className, true)
-                    .text(this.localizationManager.getDisplayName(Utils.getGranularityNameKey(granularity)))
+                    .text(this.localizationManager.getDisplayName(Utils.GETGRANULARITYNAMEKEY(granularity)))
                     .attr("x", pixelConverter.toString(startXpoint + paraTimeline.SelectedTextSelectionFactor * elementWidth))
                     .attr("y", pixelConverter.toString(paraTimeline.SelectedTextSelectionYOffset));
             }
         }
+    }
+
+    public update(options: powerbiVisualsApi.extensibility.visual.VisualUpdateOptions): void {
+        if (!paraTimeline.AREVISUALUPDATEOPTIONSVALID(options)) {
+            this.clearData();
+            return;
+        }
+
+        this.options = options;
+        this.dataView = options.dataViews[0];
+
+        // Setting parsing was moved here from createTimelineData because settings values may be modified before the function is called.
+        this.settings = paraTimeline.parsesettings(
+            this.dataView,
+            this.options.jsonFilters,
+            this.host.colorPalette,
+        );
+
+        this.update1();
+        this.update2();
 
         this.render(
             this.timelineData,
@@ -1003,7 +984,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         //Bring foward the container containing the labels
         d3Select(".lastId")
             .each(function (d, i) {
-                (this as any).parentNode.parentNode.appendChild((this as any).parentNode);
+                (this)["parentNode"].parentNode.appendChild((this)["parentNode"]);
             });
     }
 
@@ -1060,10 +1041,10 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
 
         cellSelection
             .attr("fill", (dataPoint: ITimelineDataPoint, index: number) => {
-                const isSelected: boolean = Utils.isGranuleSelected(dataPoint, this.timelineData, cellsSettings);
+                const isSelected: boolean = Utils.ISGRANULESELECTED(dataPoint, this.timelineData, cellsSettings);
 
                 if (visSettings.scrollAutoAdjustment.show && isSelected && !singleCaseDone) {
-                    const selectedGranulaPos: number = (cellSelection.nodes()[index] as any).x.baseVal.value;
+                    const selectedGranulaPos: number = (cellSelection.nodes()[index]).x.baseVal.value;
                     this.selectedGranulaPos = selectedGranulaPos;
                     singleCaseDone = true;
                 }
@@ -1073,7 +1054,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                     : (cellsSettings.fillUnselected || Utils.DefaultCellColor);
             })
             .style("stroke", (dataPoint: ITimelineDataPoint) => {
-                const isSelected: boolean = Utils.isGranuleSelected(dataPoint, this.timelineData, cellsSettings);
+                const isSelected: boolean = Utils.ISGRANULESELECTED(dataPoint, this.timelineData, cellsSettings);
 
                 return isSelected
                     ? cellsSettings.selectedStrokeColor
@@ -1159,7 +1140,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             .call(this.cursorDragBehavior);
     }
 
-    public renderTimeRangeText(timelineData: ITimelineData, rangeHeaderSettings: LabelsSettings): void {
+    public renderTIMERANGETEXT(timelineData: ITimelineData, rangeHeaderSettings: LabelsSettings): void {
         const leftMargin: number = (GranularityNames.length + paraTimeline.GranularityNamesLength)
             * this.timelineProperties.elementWidth;
 
@@ -1176,7 +1157,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                 .classed(paraTimeline.TimelineSelectors.RangeTextArea.className, true)
                 .append("text");
 
-            const timeRangeText: string = Utils.timeRangeText(timelineData);
+            const timeRangeText: string = Utils.TIMERANGETEXT(timelineData);
 
             const labelFormattedTextOptions: dataLabelInterfaces.LabelFormattedTextOptions = {
                 fontSize: rangeHeaderSettings.textSize,
@@ -1203,14 +1184,14 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     }
 
     public setSelection(timelineData: ITimelineData): void {
-        if (Utils.areBoundsOfSelectionAndAvailableDatesTheSame(timelineData)) {
+        if (Utils.AREBOUNDSOFSELECTIONANDAVAILABLEDATESTHESAME(timelineData)) {
             this.clearSelection(timelineData.filterColumnTarget);
             return;
         }
 
         this.applyDatePeriod(
-            Utils.getStartSelectionDate(timelineData),
-            Utils.getEndSelectionDate(timelineData),
+            Utils.GETSTARTSELECTIONDATE(timelineData),
+            Utils.GETENDSELECTIONDATE(timelineData),
             timelineData.filterColumnTarget,
         );
     }
@@ -1228,13 +1209,13 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         );
     }
 
-    public getFilterAction(startDate: Date, endDate: Date): powerbi.FilterAction {
-        return typeof startDate !== "undefined"
-            && typeof endDate !== "undefined"
+    public getFilterAction(startDate: Date, endDate: Date): powerbiVisualsApi.FilterAction {
+        return startDate !== undefined
+            && endDate !== undefined
             && startDate !== null
             && endDate !== null
-            ? powerbi.FilterAction.merge
-            : powerbi.FilterAction.remove;
+            ? powerbiVisualsApi.FilterAction.merge
+            : powerbiVisualsApi.FilterAction.remove;
     }
 
     /**
@@ -1244,10 +1225,10 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
      * @param granularity The new granularity type
      */
     public changeGranularity(granularity: GranularityType, startDate: Date, endDate: Date): void {
-        Utils.unseparateSelection(this.timelineData.currentGranularity.getDatePeriods());
+        Utils.UNSEPARATESELECTION(this.timelineData.currentGranularity.getDatePeriods());
 
         this.timelineData.currentGranularity = this.timelineGranularityData.getGranularity(granularity);
-        Utils.separateSelection(this.timelineData, startDate, endDate);
+        Utils.SEPARATESELECTION(this.timelineData, startDate, endDate);
     }
 
     public createFilter(startDate: Date, endDate: Date, target: IFilterColumnTarget): AdvancedFilter {
@@ -1281,24 +1262,24 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
      * Usually it is a bind pass of what the property pane gave you, but sometimes you may want to do
      * validation and return other values/defaults.
      */
-    public enumerateObjectInstances(options: powerbi.EnumerateVisualObjectInstancesOptions): powerbi.VisualObjectInstanceEnumeration {
+    public enumerateObjectInstances(options: powerbiVisualsApi.EnumerateVisualObjectInstancesOptions): powerbiVisualsApi.VisualObjectInstanceEnumeration {
         if (options.objectName === "general") {
             return [];
         }
 
-        const settings: VisualSettings = this.settings || VisualSettings.getDefault() as VisualSettings;
+        const settings = this.settings || VisualSettings.getDefault();
 
-        const instancesEnumerator: powerbi.VisualObjectInstanceEnumeration = VisualSettings.enumerateObjectInstances(
+        const instancesEnumerator: powerbiVisualsApi.VisualObjectInstanceEnumeration = VisualSettings.enumerateObjectInstances(
             settings,
             options,
         );
 
-        const instances = (instancesEnumerator as powerbi.VisualObjectInstanceEnumerationObject).instances
-            ? (instancesEnumerator as powerbi.VisualObjectInstanceEnumerationObject).instances
+        const instances = (instancesEnumerator)["instances"]
+            ? (instancesEnumerator)["instances"]
             : instancesEnumerator;
 
         if (options.objectName === "weekDay"
-            && !settings.weekDay.daySelection
+            && !settings["weekDay"].daySelection
             && instances
             && instances[0]
             && instances[0].properties
@@ -1309,7 +1290,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         return instances;
     }
 
-    public selectPeriod(granularityType: GranularityType): void {
+    public selectPeroid(granularityType: GranularityType): void {
         if (this.timelineData.currentGranularity.getType() === granularityType) {
             return;
         }
@@ -1326,7 +1307,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     }
 
     public onCursorDrag(currentCursor: ICursorDataPoint): void {
-        const cursorOverElement: ITimelineCursorOverElement = this.findCursorOverElement((require("d3").event as MouseEvent).x);
+        const cursorOverElement: ITimelineCursorOverElement = this.findCursorOverElement(((<MouseEvent>require("d3").event)).x);
 
         if (!cursorOverElement) {
             return;
@@ -1354,7 +1335,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             this.timelineProperties.cellHeight,
             this.timelineProperties.cellsYPosition);
 
-        this.renderTimeRangeText(this.timelineData, this.settings.rangeHeader);
+        this.renderTIMERANGETEXT(this.timelineData, this.settings.rangeHeader);
     }
 
     /**
@@ -1368,7 +1349,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             return datapoint.index;
         });
 
-        const index: number = Utils.getIndexByPosition(
+        const index: number = Utils.GETINDEXBYPOSITION(
             timelineDatapointIndexes,
             cellWidth,
             position);
@@ -1389,7 +1370,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     }
 
     private handleClick(dataPoint: ITimelineDataPoint, index: number): void {
-        const event: MouseEvent = require("d3").event as MouseEvent;
+        const event: MouseEvent = (<MouseEvent>require("d3").event);
 
         event.stopPropagation();
 
@@ -1416,8 +1397,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             .classed(paraTimeline.TimelineSelectors.CursorsArea.className, true);
     }
 
-    private createDatePeriod(dataView: powerbi.DataView): ITimelineDatePeriodBase {
-        return Utils.getDatePeriod(dataView.categorical.categories[0].values);
+    private createDatePeriod(dataView: powerbiVisualsApi.DataView): ITimelineDatePeriodBase {
+        return Utils.GETDATEPRIOD(dataView.categorical.categories[0].values);
     }
 
     private createTimelineData(
@@ -1426,7 +1407,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         endDate: Date,
         timelineGranularityData: TimelineGranularityData,
         locale: string,
-        localizationManager: powerbi.extensibility.ILocalizationManager,
+        localizationManager: powerbiVisualsApi.extensibility.ILocalizationManager,
     ) {
         const calendar = new Calendar(timelineSettings.calendar, timelineSettings.weekDay);
 
@@ -1434,7 +1415,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         timelineGranularityData.createLabels();
 
         if (this.initialized) {
-            const actualEndDate: Date = TimelineGranularityData.nextDay(endDate);
+            const actualEndDate: Date = TimelineGranularityData.NEXTDAY(endDate);
 
             const daysPeriods: ITimelineDatePeriod[] = this.timelineGranularityData
                 .getGranularity(GranularityType.day)
@@ -1462,7 +1443,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
     }
 
     private updateCalendar(timelineFormat: VisualSettings): void {
-        this.calendar = paraTimeline.converter(
+        this.calendar = paraTimeline.CONVERTER(
             this.timelineData,
             this.timelineProperties,
             this.timelineGranularityData,
@@ -1476,12 +1457,12 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         );
     }
 
-    private render(
+    public render1(
         timelineData: ITimelineData,
         timelineSettings: VisualSettings,
         timelineProperties: ITimelineProperties,
-        options: powerbi.extensibility.visual.VisualUpdateOptions,
-    ): void {
+        options: powerbiVisualsApi.extensibility.visual.VisualUpdateOptions,
+    ) {
         //Removes all of the lines from the svg before drawing new ones
         d3SelectAll(".lineAxis").remove();
 
@@ -1495,7 +1476,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             + this.timelineProperties.cellHeight
             + timelineProperties.cellWidth * timelineDatapointsCount;
 
-        this.renderTimeRangeText(timelineData, timelineSettings.rangeHeader);
+        this.renderTIMERANGETEXT(timelineData, timelineSettings.rangeHeader);
 
         this.rootSelection
             .attr("drag-resize-disabled", true)
@@ -1522,7 +1503,8 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                     this.svgWidth,
                 )),
             );
-        this.mainSvgWrapperSelection.style("width", this.svgWidth < options.viewport.width / 2 ? this.svgWidth + "px" : "50%");
+        let leftSpace = options.viewport.width - this.containerG.node().getBoundingClientRect().width - 30;
+        this.mainSvgWrapperSelection.style("width", this.svgWidth < leftSpace ? this.svgWidth + "px" : leftSpace + "px");
 
         const fixedTranslateString: string = svgManipulation.translate(
             0,
@@ -1530,7 +1512,6 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         );
 
         // Here still paraTimeline.TimelineMargins.LegendHeight is used because it always must have permanent negative offset.
-        // TODO: may be there is a way how to remove this negative offset
         const translateString: string = svgManipulation.translate(
             timelineProperties.cellHeight / paraTimeline.CellHeightDivider,
             timelineProperties.topMargin - (paraTimeline.TimelineMargins.LegendHeight - paraTimeline.TimelineMargins.LegendHeightOffset),
@@ -1543,7 +1524,14 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         }
 
         this.cursorGroupSelection.attr("transform", translateString);
+    }
 
+    public render2(
+        timelineData: ITimelineData,
+        timelineSettings: VisualSettings,
+        timelineProperties: ITimelineProperties,
+        options: powerbiVisualsApi.extensibility.visual.VisualUpdateOptions,
+    ) {
         const extendedLabels = this.timelineData.currentGranularity.getExtendedLabel();
         const granularityType = this.timelineData.currentGranularity.getType();
 
@@ -1556,20 +1544,12 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             .remove();
 
         if (timelineSettings.labels.show) {
-            let lastIndex = 0;
-            let lastId = -1;
-
-            if (granularityType === GranularityType.day) {
-                lastIndex = extendedLabels.dayLabels.length;
-            } else if (granularityType === GranularityType.month) {
-                lastIndex = extendedLabels.monthLabels.length;
-            } else if (granularityType === GranularityType.quarter) {
-                lastIndex = extendedLabels.quarterLabels.length;
-            } else if (granularityType === GranularityType.week) {
-                lastIndex = extendedLabels.weekLabels.length;
-            } else if (granularityType === GranularityType.year) {
-                lastIndex = extendedLabels.yearLabels.length;
-            }
+            let lastIndex = 0, lastId = -1;
+            if (granularityType === GranularityType.day) lastIndex = extendedLabels.dayLabels.length;
+            else if (granularityType === GranularityType.month) lastIndex = extendedLabels.monthLabels.length;
+            else if (granularityType === GranularityType.quarter) lastIndex = extendedLabels.quarterLabels.length;
+            else if (granularityType === GranularityType.week) lastIndex = extendedLabels.weekLabels.length;
+            else if (granularityType === GranularityType.year) lastIndex = extendedLabels.yearLabels.length;
 
             if ((timelineSettings.labels.displayAll && granularityType !== GranularityType.day) || granularityType === GranularityType.year) {
                 let y = 0;
@@ -1581,21 +1561,9 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                     y = this.calculateYOffset(yPos + 1.5);
                     lastId = extendedLabels.yearLabels[extendedLabels.yearLabels.length - 1].id;
                 }
-
-                this.renderLabels(
-                    extendedLabels.yearLabels,
-                    this.yearLabelsSelection,
-                    y,
-                    granularityType === 0,
-                    yPos + 1,
-                    lastIndex,
-                    lastId);
-
+                this.renderLabels(extendedLabels.yearLabels, this.yearLabelsSelection, y, granularityType === 0, yPos + 1, lastIndex, lastId);
                 lastId = -1;
-
-                if (granularityType >= GranularityType.year) {
-                    yPos += yDiff;
-                }
+                if (granularityType >= GranularityType.year) yPos += yDiff;
             }
 
             if (granularityType === GranularityType.quarter) {
@@ -1606,41 +1574,25 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                     granularityType === 1,
                     yPos + 1,
                     lastIndex);
-                if (granularityType >= GranularityType.quarter) {
-                    yPos += yDiff;
-                }
+                if (granularityType >= GranularityType.quarter) yPos += yDiff;
             }
 
             if ((timelineSettings.labels.displayAll && granularityType === GranularityType.day) || granularityType === GranularityType.month) {
-                let y = 0;
-
-                let labels = extendedLabels.monthLabels;
-
+                let y = 0, labels = extendedLabels.monthLabels;
                 if (granularityType === GranularityType.month) {
                     y = this.calculateYOffset(yPos + 1) + timelineProperties.cellHeight / 2;
                 } else {
                     y = this.calculateYOffset(yPos + 1.5);
-
                     //Change the label text to be the title so that it is more precise
                     labels = extendedLabels.monthLabels.map(x => {
                         x.text = x.title;
                         return x;
                     });
-
                     lastId = extendedLabels.monthLabels[extendedLabels.monthLabels.length - 1].id;
                 }
 
-                this.renderLabels(
-                    labels,
-                    this.monthLabelsSelection,
-                    y,
-                    granularityType === 2,
-                    yPos + 1,
-                    lastIndex,
-                    lastId);
-                if (granularityType >= GranularityType.month) {
-                    yPos += yDiff;
-                }
+                this.renderLabels(labels, this.monthLabelsSelection, y, granularityType === 2, yPos + 1, lastIndex, lastId);
+                if (granularityType >= GranularityType.month) yPos += yDiff;
             }
 
             if (granularityType === GranularityType.week) {
@@ -1651,9 +1603,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                     granularityType === 3,
                     yPos + 1,
                     lastIndex);
-                if (granularityType >= GranularityType.week) {
-                    yPos += yDiff;
-                }
+                if (granularityType >= GranularityType.week) yPos += yDiff;
             }
 
             if (granularityType === GranularityType.day) {
@@ -1664,11 +1614,33 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
                     granularityType === 4,
                     yPos + 1,
                     lastIndex);
-                if (granularityType >= GranularityType.day) {
-                    yPos += yDiff;
-                }
+                if (granularityType >= GranularityType.day) yPos += yDiff;
             }
         }
+        return yPos;
+    }
+
+    public setContextMenu(options) {
+        let dataView = options.dataViews[0], categorical = dataView.categorical;
+        let cat = categorical.categories[0];
+        let identity = this.host.createSelectionIdBuilder().withCategory(cat, 0).createSelectionId();
+        let selectionIdOptions = [{
+            identity: identity,
+            selected: false
+        }];
+        this.rootSelection.data(selectionIdOptions);
+        this.getContextMenu(this.rootSelection, this.selectionManager);
+    }
+
+    private render(
+        timelineData: ITimelineData,
+        timelineSettings: VisualSettings,
+        timelineProperties: ITimelineProperties,
+        options: powerbiVisualsApi.extensibility.visual.VisualUpdateOptions,
+    ): void {
+        
+        this.render1(timelineData, timelineSettings, timelineProperties, options);
+        let yPos = this.render2(timelineData, timelineSettings, timelineProperties, options);
 
         yPos -= 1;
         this.timelineProperties.cellsYPosition = this.calculateYOffset(yPos);
@@ -1686,6 +1658,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         );
 
         this.scrollAutoFocusFunc(this.selectedGranulaPos);
+        this.setContextMenu(options);
     }
 
     private calculateYOffset(index: number): number {
@@ -1799,7 +1772,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             let y1 = this.calculateYOffset(yIndex);
             let y2 = this.calculateYOffset(yIndex + 1);
             let averageY = (y1 * 0.75 + y2 * 0.25);
-            let lengthOfText = this.getLengthOfText(labels[i].id) as number;
+            let lengthOfText = this.getLengthOfText(labels[i].id);
 
             for (i; i < labels.length; i++) {
                 // Draw vertical line to show start of one year and the end of another
@@ -1828,8 +1801,22 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
         }
     }
 
+    private getContextMenu(svg, selection) {
+        svg.on('contextmenu', () => {
+            const mouseEvent: MouseEvent = (<MouseEvent>d3.event);
+            let dataPoint = d3.select(d3.event["currentTarget"]).datum();
+            selection.showContextMenu(dataPoint? dataPoint["identity"] : {}, {
+                x: mouseEvent.clientX,
+                y: mouseEvent.clientY
+            });
+            mouseEvent.preventDefault();
+        }); 
+    }
+
     private getLengthOfText(id) {
-        return (d3Select("#id" + id).node() as any).getBBox().width * 0.65;
+        let s = d3.select("#id" + id), text = s.text(), title = s.select("title").text(), t = text.replace(title, "");
+        let textProperties = {text: t, fontFamily: "default", fontSize: s.attr("fontSize") + "px", fontWeight: "normal"}, rate = 9 / 12;
+        return textMeasurementService.measureSvgTextWidth(textProperties) * 0.65;
     }
 
     private drawLine(container, x1, x2, y1, y2, strokeColor) {
@@ -1902,7 +1889,7 @@ export class paraTimeline implements powerbi.extensibility.visual.IVisual {
             timelineProperties.cellsYPosition,
         );
 
-        this.renderTimeRangeText(timelineData, this.settings.rangeHeader);
+        this.renderTIMERANGETEXT(timelineData, this.settings.rangeHeader);
 
         this.setSelection(timelineData);
         this.toggleForceSelectionOptions();

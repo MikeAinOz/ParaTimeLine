@@ -30,13 +30,13 @@ import { Calendar } from "../calendar";
 import { ITimelineLabel } from "../dataInterfaces";
 import { ITimelineDatePeriod } from "../datePeriod/datePeriod";
 import { Utils } from "../utils";
-import { TimelineGranularityBase } from "./granularityBase";
+import { TimelineGranularityBase } from "./TimelineGranularityBase";
 import { IGranularityRenderProps } from "./granularityRenderProps";
 import { GranularityType } from "./granularityType";
 
 export class QuarterGranularity extends TimelineGranularityBase {
     constructor(calendar: Calendar, locale: string) {
-        super(calendar, locale, Utils.getGranularityPropsByMarker("Q"));
+        super(calendar, locale, Utils.GETGRANULARITYPROPSBYMARKER("Q"));
     }
 
     public render(props: IGranularityRenderProps, isFirst: boolean): Selection<any, any, any, any> {
@@ -51,7 +51,7 @@ export class QuarterGranularity extends TimelineGranularityBase {
         return GranularityType.quarter;
     }
 
-    public splitDate(date: Date): Array<string | number> {
+    public splitDate(date: Date) {
         return [
             this.quarterText(date),
             this.determineYear(date),

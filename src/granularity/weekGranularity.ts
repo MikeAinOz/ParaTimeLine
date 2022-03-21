@@ -25,13 +25,13 @@
  */
 
 import { Selection } from "d3-selection";
-import powerbi from "powerbi-visuals-api";
+import powerbiVisualsApi from "powerbi-visuals-api";
 
 import { Calendar } from "../calendar";
 import { ITimelineLabel } from "../dataInterfaces";
 import { ITimelineDatePeriod } from "../datePeriod/datePeriod";
 import { Utils } from "../utils";
-import { TimelineGranularityBase } from "./granularityBase";
+import { TimelineGranularityBase } from "./TimelineGranularityBase";
 import { IGranularityRenderProps } from "./granularityRenderProps";
 import { GranularityType } from "./granularityType";
 
@@ -41,9 +41,9 @@ export class WeekGranularity extends TimelineGranularityBase {
     constructor(
         calendar: Calendar,
         locale: string,
-        protected localizationManager: powerbi.extensibility.ILocalizationManager,
+        protected localizationManager: powerbiVisualsApi.extensibility.ILocalizationManager,
     ) {
-        super(calendar, locale, Utils.getGranularityPropsByMarker("W"));
+        super(calendar, locale, Utils.GETGRANULARITYPROPSBYMARKER("W"));
     }
 
     public render(props: IGranularityRenderProps, isFirst: boolean): Selection<any, any, any, any> {
@@ -58,11 +58,11 @@ export class WeekGranularity extends TimelineGranularityBase {
         return GranularityType.week;
     }
 
-    public splitDate(date: Date): Array<string | number> {
+    public splitDate(date: Date) {
         return this.determineWeek(date);
     }
 
-    public splitDateForTitle(date: Date): Array<string | number> {
+    public splitDateForTitle(date: Date) {
         const weekData = this.determineWeek(date);
 
         return [
@@ -72,7 +72,7 @@ export class WeekGranularity extends TimelineGranularityBase {
     }
 
     public sameLabel(firstDatePeriod: ITimelineDatePeriod, secondDatePeriod: ITimelineDatePeriod): boolean {
-        return Utils.arraysEqual(firstDatePeriod.week, secondDatePeriod.week);
+        return Utils.ARRAYSEQUAL(firstDatePeriod.week, secondDatePeriod.week);
     }
 
     public generateLabel(datePeriod: ITimelineDatePeriod): ITimelineLabel {

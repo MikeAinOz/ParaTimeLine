@@ -46,24 +46,24 @@ export class Utils {
     public static TotalMinutes: number = 60;
     public static TotalHours: number = 24;
 
-    public static convertToDaysFromMilliseconds(milliseconds: number): number {
+    public static CONVERTTODAYSFROMMILLISECONDS(milliseconds: number): number {
         return milliseconds / (Utils.TotalMillisecondsInADay);
     }
 
-    public static getAmountOfDaysBetweenDates(startDate: Date, endDate: Date): number {
-        const offset: number = Utils.getDaylightSavingTimeOffset(startDate, endDate);
+    public static GETAMOUNTOFDAYSBETWEENDATES(startDate: Date, endDate: Date): number {
+        const offset: number = Utils.GETDAYLIGHTSAVINGTIMEOFFSET(startDate, endDate);
         const totalMilliseconds: number = endDate.getTime() - startDate.getTime() - offset;
 
-        return Utils.convertToDaysFromMilliseconds(Math.abs(totalMilliseconds));
+        return Utils.CONVERTTODAYSFROMMILLISECONDS(Math.abs(totalMilliseconds));
     }
 
-    public static getAmountOfWeeksBetweenDates(startDate: Date, endDate: Date): number {
-        const totalDays: number = Utils.getAmountOfDaysBetweenDates(startDate, endDate);
+    public static GETAMOUNTOFWEEKSBETWEENDATES(startDate: Date, endDate: Date): number {
+        const totalDays: number = Utils.GETAMOUNTOFDAYSBETWEENDATES(startDate, endDate);
 
         return Utils.WeekDayOffset + Math.floor(totalDays / Utils.TotalDaysInWeek);
     }
 
-    public static getMillisecondsWithoutTimezone(date: Date): number {
+    public static GETMILLISECONDSWITHOUTTIMEZONE(date: Date): number {
         if (!date) {
             return 0;
         }
@@ -74,34 +74,34 @@ export class Utils {
             * Utils.TotalSeconds;
     }
 
-    public static getDateWithoutTimezone(date: Date): Date {
-        return new Date(Utils.getMillisecondsWithoutTimezone(date));
+    public static GETDATEWITHOUTTIMEZONE(date: Date): Date {
+        return new Date(Utils.GETMILLISECONDSWITHOUTTIMEZONE(date));
     }
 
-    public static getDaylightSavingTimeOffset(startDate: Date, endDate: Date): number {
+    public static GETDAYLIGHTSAVINGTIMEOFFSET(startDate: Date, endDate: Date): number {
         const startDateTzOffset: number = startDate.getTimezoneOffset();
         const endDateTzOffset: number = endDate.getTimezoneOffset();
 
         return (endDateTzOffset - startDateTzOffset) * 60 * 1000;
     }
 
-    public static toStringDateWithoutTimezone(date: Date): string {
+    public static TOSTRINGDATEWITHOUTTIMEZONE(date: Date): string {
         if (!date) {
             return null;
         }
 
-        return Utils.getDateWithoutTimezone(date).toISOString();
+        return Utils.GETDATEWITHOUTTIMEZONE(date).toISOString();
     }
 
-    public static getEndOfThePreviousDate(date: Date): Date {
-        const currentDate: Date = Utils.resetTime(date);
+    public static GETENDOFTHEPREVIOUSDATE(date: Date): Date {
+        const currentDate: Date = Utils.RESETTIME(date);
 
         currentDate.setMilliseconds(-Utils.OffsetMilliseconds);
 
         return currentDate;
     }
 
-    public static parseDateWithoutTimezone(dateString: string): Date {
+    public static PARSEDATEWITHOUTTIMEZONE(dateString: string): Date {
         if (dateString === null) {
             return null;
         }
@@ -118,21 +118,21 @@ export class Utils {
         return new Date(timeInMilliseconds);
     }
 
-    public static resetTime(date: Date): Date {
+    public static RESETTIME(date: Date): Date {
         return new Date(
             date.getFullYear(),
             date.getMonth(),
             date.getDate());
     }
 
-    public static getDatePeriod(values: any[]): ITimelineDatePeriodBase {
+    public static GETDATEPRIOD(values: any[]): ITimelineDatePeriodBase {
         let startDate: Date;
         let endDate: Date;
 
         values = [].concat(values);
 
         values.forEach((value: any) => {
-            const date: Date = Utils.parseDate(value);
+            const date: Date = Utils.PARSEDATE(value);
 
             if (date < startDate || startDate === undefined) {
                 startDate = date;
@@ -146,7 +146,7 @@ export class Utils {
         return { startDate , endDate };
     }
 
-    public static parseDate(value: any): Date {
+    public static PARSEDATE(value: any): Date {
         const typeOfValue: string = typeof value;
         let date: Date = value;
 
@@ -159,16 +159,16 @@ export class Utils {
         }
 
         if (date && date instanceof Date && date.toString() !== "Invalid Date") {
-            return Utils.resetTime(date);
+            return Utils.RESETTIME(date);
         }
 
         return undefined;
     }
 
-    public static areBoundsOfSelectionAndAvailableDatesTheSame(timelineData: ITimelineData): boolean {
+    public static AREBOUNDSOFSELECTIONANDAVAILABLEDATESTHESAME(timelineData: ITimelineData): boolean {
         const datePeriod: ITimelineDatePeriod[] = timelineData.currentGranularity.getDatePeriods();
-        const startDate: Date = Utils.getStartSelectionDate(timelineData);
-        const endDate: Date = Utils.getEndSelectionDate(timelineData);
+        const startDate: Date = Utils.GETSTARTSELECTIONDATE(timelineData);
+        const endDate: Date = Utils.GETENDSELECTIONDATE(timelineData);
 
         return datePeriod
             && datePeriod.length >= 1
@@ -178,13 +178,13 @@ export class Utils {
             && datePeriod[datePeriod.length - 1].endDate.getTime() === endDate.getTime();
     }
 
-    public static getTheLatestDayOfMonth(monthId: number): number {
+    public static GETTHELATESTDAYOFMONTH(monthId: number): number {
         const date: Date = new Date(2008, monthId + 1, 0); // leap year, so the latest day of February is 29.
 
         return date.getDate();
     }
 
-    public static isValueEmpty(value: any): boolean {
+    public static ISVALUEEMPTY(value: any): boolean {
         return value === undefined || value === null || isNaN(value);
     }
 
@@ -192,7 +192,7 @@ export class Utils {
      * Returns the date of the start of the selection
      * @param timelineData The TimelineData which contains all the date periods
      */
-    public static getStartSelectionDate(timelineData: ITimelineData): Date {
+    public static GETSTARTSELECTIONDATE(timelineData: ITimelineData): Date {
         return timelineData.currentGranularity.getDatePeriods()[timelineData.selectionStartIndex].startDate;
     }
 
@@ -200,7 +200,7 @@ export class Utils {
      * Returns the date of the end of the selection
      * @param timelineData The TimelineData which contains all the date periods
      */
-    public static getEndSelectionDate(timelineData: ITimelineData): Date {
+    public static GETENDSELECTIONDATE(timelineData: ITimelineData): Date {
         return timelineData.currentGranularity.getDatePeriods()[timelineData.selectionEndIndex].endDate;
     }
 
@@ -208,7 +208,7 @@ export class Utils {
      * Returns the date period of the end of the selection
      * @param timelineData The TimelineData which contains all the date periods
      */
-    public static getEndSelectionPeriod(timelineData: ITimelineData): ITimelineDatePeriod {
+    public static GETENDSELECTIONPERIOD(timelineData: ITimelineData): ITimelineDatePeriod {
         return timelineData.currentGranularity.getDatePeriods()[timelineData.selectionEndIndex];
     }
 
@@ -219,38 +219,38 @@ export class Utils {
      * @param timelineData The TimelineData with the selected date periods
      * @param timelineFormat The TimelineFormat with the chosen colors
      */
-    public static getCellColor(
+    public static GETCELLCOLOR(
         dataPoint: ITimelineDataPoint,
         timelineData: ITimelineData,
         cellSettings: CellsSettings): string {
 
-        const inSelectedPeriods: boolean = dataPoint.datePeriod.startDate >= Utils.getStartSelectionDate(timelineData)
-            && dataPoint.datePeriod.endDate <= Utils.getEndSelectionDate(timelineData);
+        const inSelectedPeriods: boolean = dataPoint.datePeriod.startDate >= Utils.GETSTARTSELECTIONDATE(timelineData)
+            && dataPoint.datePeriod.endDate <= Utils.GETENDSELECTIONDATE(timelineData);
 
         return inSelectedPeriods
             ? cellSettings.fillSelected
             : (cellSettings.fillUnselected || Utils.DefaultCellColor);
     }
 
-    public static isGranuleSelected(dataPoint: ITimelineDataPoint, timelineData: ITimelineData, cellSettings: CellsSettings): boolean {
-        return dataPoint.datePeriod.startDate >= Utils.getStartSelectionDate(timelineData)
-            && dataPoint.datePeriod.endDate <= Utils.getEndSelectionDate(timelineData);
+    public static ISGRANULESELECTED(dataPoint: ITimelineDataPoint, timelineData: ITimelineData, cellSettings: CellsSettings): boolean {
+        return dataPoint.datePeriod.startDate >= Utils.GETSTARTSELECTIONDATE(timelineData)
+            && dataPoint.datePeriod.endDate <= Utils.GETENDSELECTIONDATE(timelineData);
     }
 
     /**
      * Returns the granularity type of the given granularity name
      * @param granularityName The name of the granularity
      */
-    public static getGranularityType(granularityName: string): GranularityType {
-        const index: number = Utils.findIndex(GranularityNames, (granularity: IGranularityName) => {
+    public static GETGRANULARITYTYPE(granularityName: string): GranularityType {
+        const index: number = Utils.FINDINDEX(GranularityNames, (granularity: IGranularityName) => {
             return granularity.name === granularityName;
         });
 
         return GranularityNames[index].granularityType;
     }
 
-    public static getGranularityPropsByMarker(marker: string): IGranularityName {
-        const index: number = Utils.findIndex(GranularityNames, (granularity: IGranularityName) => {
+    public static GETGRANULARITYPROPSBYMARKER(marker: string): IGranularityName {
+        const index: number = Utils.FINDINDEX(GranularityNames, (granularity: IGranularityName) => {
             return granularity.marker === marker;
         });
 
@@ -261,8 +261,8 @@ export class Utils {
      * Returns the name of the granularity type
      * @param granularity The type of granularity
      */
-    public static getGranularityNameKey(granularityType: GranularityType): string {
-        const index: number = Utils.findIndex(GranularityNames, (granularity: IGranularityName) => {
+    public static GETGRANULARITYNAMEKEY(granularityType: GranularityType): string {
+        const index: number = Utils.FINDINDEX(GranularityNames, (granularity: IGranularityName) => {
             return granularity.granularityType === granularityType;
         });
 
@@ -276,11 +276,11 @@ export class Utils {
      * @param startDate The starting date of the selection
      * @param endDate The ending date of the selection
      */
-    public static separateSelection(timelineData: ITimelineData, startDate: Date, endDate: Date): void {
+    public static SEPARATESELECTION(timelineData: ITimelineData, startDate: Date, endDate: Date): void {
         const datePeriods: ITimelineDatePeriod[] = timelineData.currentGranularity.getDatePeriods();
 
-        let startDateIndex: number = Utils.findIndex(datePeriods, (x) => startDate < x.endDate);
-        let endDateIndex: number = Utils.findIndex(datePeriods, (x) => endDate <= x.endDate);
+        let startDateIndex: number = Utils.FINDINDEX(datePeriods, (x) => startDate < x.endDate);
+        let endDateIndex: number = Utils.FINDINDEX(datePeriods, (x) => endDate <= x.endDate);
 
         startDateIndex = startDateIndex >= 0
             ? startDateIndex
@@ -293,8 +293,8 @@ export class Utils {
         timelineData.selectionStartIndex = startDateIndex;
         timelineData.selectionEndIndex = endDateIndex;
 
-        const startRatio: number = Utils.getDateRatio(datePeriods[startDateIndex], startDate, true);
-        const endRatio: number = Utils.getDateRatio(datePeriods[endDateIndex], endDate, false);
+        const startRatio: number = Utils.GETDATERATIO(datePeriods[startDateIndex], startDate, true);
+        const endRatio: number = Utils.GETDATERATIO(datePeriods[endDateIndex], endDate, false);
 
         if (endRatio > 0) {
             timelineData.currentGranularity.splitPeriod(endDateIndex, endRatio, endDate);
@@ -319,7 +319,7 @@ export class Utils {
      * @param date The date
      * @param fromStart Whether to calculater the ratio from the start of the date period.
      */
-    public static getDateRatio(datePeriod: ITimelineDatePeriod, date: Date, fromStart: boolean): number {
+    public static GETDATERATIO(datePeriod: ITimelineDatePeriod, date: Date, fromStart: boolean): number {
         const dateDifference: number = fromStart
             ? date.getTime() - datePeriod.startDate.getTime()
             : datePeriod.endDate.getTime() - date.getTime();
@@ -334,12 +334,12 @@ export class Utils {
     /**
      * Returns the time range text, depending on the given granularity (e.g. "Feb 3 2014 - Apr 5 2015", "Q1 2014 - Q2 2015")
      */
-    public static timeRangeText(timelineData: ITimelineData): string {
-        const startSelectionDateArray: Array<string | number> = timelineData.currentGranularity
-            .splitDateForTitle(Utils.getStartSelectionDate(timelineData));
+    public static TIMERANGETEXT(timelineData: ITimelineData): string {
+        const startSelectionDateArray = timelineData.currentGranularity
+            .splitDateForTitle(Utils.GETSTARTSELECTIONDATE(timelineData));
 
-        const endSelectionDateArray: Array<string | number> = timelineData.currentGranularity
-            .splitDateForTitle(Utils.getEndSelectionPeriod(timelineData).startDate);
+        const endSelectionDateArray = timelineData.currentGranularity
+            .splitDateForTitle(Utils.GETENDSELECTIONPERIOD(timelineData).startDate);
 
         const startSelectionString: string = startSelectionDateArray.join(Utils.DateArrayJoiner);
         const endSelectionString: string = endSelectionDateArray.join(Utils.DateArrayJoiner);
@@ -347,8 +347,8 @@ export class Utils {
         return `${startSelectionString}${Utils.DateSplitter}${endSelectionString}`;
     }
 
-    public static dateRangeText(datePeriod: ITimelineDatePeriod): string {
-        return `${datePeriod.startDate.toDateString()}${Utils.DateSplitter}${this.previousDay(datePeriod.endDate).toDateString()}`;
+    public static DATERANGETEXT(datePeriod: ITimelineDatePeriod): string {
+        return `${datePeriod.startDate.toDateString()}${Utils.DateSplitter}${this.previousday(datePeriod.endDate).toDateString()}`;
     }
 
     /**
@@ -356,8 +356,8 @@ export class Utils {
      * i.e. combines "Feb 1 2016 - Feb 5 2016" with "Feb 5 2016 - Feb 29 2016" into "Feb 1 2016 - Feb 29 2016"
      * @param datePeriods The list of date periods
      */
-    public static unseparateSelection(datePeriods: ITimelineDatePeriod[]): void {
-        const separationIndex: number = Utils.findIndex(
+    public static UNSEPARATESELECTION(datePeriods: ITimelineDatePeriod[]): void {
+        const separationIndex: number = Utils.FINDINDEX(
             datePeriods,
             (datePeriod: ITimelineDatePeriod) => {
                 return datePeriod.fraction < Utils.MinFraction;
@@ -373,7 +373,7 @@ export class Utils {
         datePeriods.splice(separationIndex + 1, 1);
     }
 
-    public static getIndexByPosition(
+    public static GETINDEXBYPOSITION(
         elements: number[],
         widthOfElement: number,
         position: number,
@@ -383,13 +383,13 @@ export class Utils {
 
         const length: number = elements.length;
 
-        if (!Utils.isValueEmpty(elements[0])
-            && !Utils.isValueEmpty(elements[1])
+        if (!Utils.ISVALUEEMPTY(elements[0])
+            && !Utils.ISVALUEEMPTY(elements[1])
             && position <= elements[1] * widthOfElement + offset) {
 
             return 0;
         } else if (
-            !Utils.isValueEmpty(elements[length - 1])
+            !Utils.ISVALUEEMPTY(elements[length - 1])
             && position >= elements[length - 1] * widthOfElement + offset) {
 
             return length - 1;
@@ -407,7 +407,7 @@ export class Utils {
         return 0;
     }
 
-    public static arraysEqual(a: any[], b: any[]): boolean {
+    public static ARRAYSEQUAL(a: any[], b: any[]): boolean {
         if (a === b) {
             return true;
         }
@@ -432,7 +432,7 @@ export class Utils {
         return true;
     }
 
-    public static findIndex(
+    public static FINDINDEX(
         array: any[],
         predicate: (value: any, index: number, array: any[]) => boolean,
     ): number {
@@ -466,8 +466,8 @@ export class Utils {
         * Utils.TotalMinutes
         * Utils.TotalHours;
 
-    private static previousDay(date: Date): Date {
-        const prevDay: Date = Utils.resetTime(date);
+    private static previousday(date: Date): Date {
+        const prevDay: Date = Utils.RESETTIME(date);
 
         prevDay.setDate(prevDay.getDate() - 1);
 

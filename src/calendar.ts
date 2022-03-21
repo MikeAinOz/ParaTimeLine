@@ -24,7 +24,7 @@
  *  THE SOFTWARE.
  */
 
-import { TimelineGranularityData } from "./granularity/granularityData";
+import { TimelineGranularityData } from "./granularity/TimelineGranularityData";
 
 import { CalendarSettings } from "./settings/calendarSettings";
 import { WeekDaySettings } from "./settings/weekDaySettings";
@@ -79,7 +79,7 @@ export class Calendar {
     }
 
     public getNextDate(date: Date): Date {
-        return TimelineGranularityData.nextDay(date);
+        return TimelineGranularityData.NEXTDAY(date);
     }
 
     public getWeekPeriod(date: Date): IPeriodDates {
@@ -180,7 +180,7 @@ export class Calendar {
             : new Date(year, this.firstMonthOfYear, this.firstDayOfYear).getDay();
 
         while (date.getDay() !== weekDay) {
-            date = TimelineGranularityData.nextDay(date);
+            date = TimelineGranularityData.NEXTDAY(date);
         }
 
         return date;

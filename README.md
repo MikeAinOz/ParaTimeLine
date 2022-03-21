@@ -1,1 +1,1 @@
-paraTimeline
+The ParaTimeLine custom filter a reimagined and improved custom filter, based on the original Microsoft Timeline filter. This filter is slimmer and easy to place at the top or the bottom of the screen. 
